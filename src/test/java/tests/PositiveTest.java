@@ -14,26 +14,9 @@ import static utils.PropertyReader.getProperty;
 @Log4j2
 public class PositiveTest extends BaseTest {
 
-    UserData newUserData;
-    Faker faker = new Faker();
-
-    public void create() {
-        newUserData = UserData.builder()
-                .firstname(faker.name().firstName())
-                .lastname(faker.name().lastName())
-                .totalprice(faker.number().numberBetween(100, 600))
-                .depositpaid(true)
-                .bookingdates(new Bookingdates("2022-12-29", "2023-01-01"))
-                .additionalneeds("TV in the room")
-                .build();
-
-
-    }
-
     @Test
     public void createBooking() {
 
-        log.info("create new user");
         create();
         String name = newUserData.getFirstname();
         String lastName = newUserData.getLastname();
@@ -42,19 +25,10 @@ public class PositiveTest extends BaseTest {
         String checkOutDate = newUserData.getBookingdates().getCheckout();
         String wishes = newUserData.getAdditionalneeds();
 
-        int bookingID = given()
-                .body(newUserData)
-                .when()
-                .post(getProperty("booking"))
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .body("bookingid", notNullValue())
-                .extract()
-                .path("bookingid");
+     bookingID = gettingBookingIDAndCheckingOfCreating();
 
 
-        log.info("Check if the created user exists in the system");
+        log.info("Check if the created booking exists in the system");
 
         given()
                 .when()
@@ -75,29 +49,19 @@ public class PositiveTest extends BaseTest {
     @Test
     public void updateBooking() {
 
-        log.info("create new user");
         create();
 
-        int bookingID = given()
-                .body(newUserData)
-                .when()
-                .post(getProperty("booking"))
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .body("bookingid", notNullValue())
-                .extract()
-                .path("bookingid");
+        bookingID = gettingBookingIDAndCheckingOfCreating();
 
 
-        log.info("update booking");
+        log.info("Update booking");
 
         UserData updateUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
                 .totalprice(faker.number().numberBetween(100, 600))
                 .depositpaid(true)
-                .bookingdates(new Bookingdates("2022-11-29", "2023-02-01"))
+                .bookingdates(new Bookingdates(getProperty("checkInDateForUpdate"), getProperty("checkOutDateForUpdate")))
                 .additionalneeds("Slippers in the room")
                 .build();
 
@@ -117,7 +81,7 @@ public class PositiveTest extends BaseTest {
                 .assertThat()
                 .statusCode(200);
 
-        log.info("Check if the updated user exists in the system");
+        log.info("Check if the updated booking exists in the system");
 
         given()
                 .when()
@@ -136,23 +100,63 @@ public class PositiveTest extends BaseTest {
     }
 
     @Test
-    public void deleteUser() {
+    public void partialUpdateBooking() {
 
-        log.info("create new user");
         create();
+        int price = newUserData.getTotalprice();
+        String checkInDate = newUserData.getBookingdates().getCheckin();
+        String checkOutDate = newUserData.getBookingdates().getCheckout();
+        String wishes = newUserData.getAdditionalneeds();
+        bookingID = gettingBookingIDAndCheckingOfCreating();
 
-        int bookingID = given()
-                .body(newUserData)
+
+        log.info("Update booking");
+
+        UserData updateUserData = UserData.builder()
+                .firstname(faker.name().firstName())
+                .lastname(faker.name().lastName())
+
+                .build();
+
+        String updatedName = updateUserData.getFirstname();
+        String updatedLastName = updateUserData.getLastname();
+
+
+        given()
+                .body(updateUserData)
+                .header("cookie", "token=" + token)
                 .when()
-                .post(getProperty("booking"))
+                .patch(getProperty("booking") + "/" + bookingID)
+                .then()
+                .assertThat()
+                .statusCode(200);
+
+        log.info("Check if the partially updated booking exists in the system");
+
+        given()
+                .when()
+                .get(getProperty("booking") + "/" + bookingID)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("bookingid", notNullValue())
-                .extract()
-                .path("bookingid");
+                .body("firstname", equalTo(updatedName),
+                        "lastname", equalTo(updatedLastName),
+                        "totalprice", equalTo(price),
+                        "bookingdates.checkin", equalTo(checkInDate),
+                        "bookingdates.checkout", equalTo(checkOutDate),
+                        "additionalneeds", equalTo(wishes));
 
-        log.info("delete user");
+
+    }
+
+    @Test
+    public void deleteUser() {
+
+        create();
+
+        bookingID = gettingBookingIDAndCheckingOfCreating();
+
+        log.info("Delete a booking");
 
         given()
                 .header("cookie", "token=" + token)
@@ -162,6 +166,8 @@ public class PositiveTest extends BaseTest {
                 .assertThat()
                 .statusCode(201);
 
+        log.info("Checking if the booking is deleted");
+
         given()
                 .when()
                 .get(getProperty("booking") + "/" + bookingID)
@@ -170,4 +176,16 @@ public class PositiveTest extends BaseTest {
     }
 
 
+    @Test
+    public void getAllBooking (){
+
+        given()
+                .when()
+                .get(getProperty("booking"))
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .body( not(emptyArray()));
+
+    }
 }
