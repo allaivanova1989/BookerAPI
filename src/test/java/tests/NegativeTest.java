@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static utils.PropertyReader.getProperty;
 
 @Log4j2
-public class NegativeTest extends BaseTest{
+public class NegativeTest extends BaseTest {
 
 
     private void checkBadRequest() {
@@ -24,12 +24,13 @@ public class NegativeTest extends BaseTest{
 
 
     }
-    @Test
-    public void checkDeletionWithoutAuth(){
-       log.info("Checking if a booking can't be deleted without authentication");
-        create();
 
-        bookingID = gettingBookingIDAndCheckingOfCreating();
+    @Test
+    public void checkDeletionWithoutAuth() {
+
+        log.info("Checking if a booking can't be deleted without authentication");
+        create();
+        bookingID = getBookingIDAndCheckOfCreating();
         given()
 
                 .when()
@@ -40,7 +41,6 @@ public class NegativeTest extends BaseTest{
                 .body(equalTo("Forbidden"));
 
         log.info("Check if the booking is still in the system");
-
         given()
                 .when()
                 .get(getProperty("booking") + "/" + bookingID)
@@ -51,19 +51,20 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkUpdatingWithoutAuth(){
+    public void checkUpdatingWithoutAuth() {
+
         log.info("Checking if a booking can't be updated without authentication");
         create();
-        String name = newUserData.getFirstname();
-        String lastName = newUserData.getLastname();
-        int price = newUserData.getTotalprice();
-        String checkInDate = newUserData.getBookingdates().getCheckin();
-        String checkOutDate = newUserData.getBookingdates().getCheckout();
-        String wishes = newUserData.getAdditionalneeds();
+        String nameBeforeUpdate = newUserData.getFirstname();
+        String lastNameBeforeUpdate = newUserData.getLastname();
+        int priceBeforeUpdate = newUserData.getTotalprice();
+        String checkInDateBeforeUpdate = newUserData.getBookingdates().getCheckin();
+        String checkOutDateBeforeUpdate = newUserData.getBookingdates().getCheckout();
+        String wishesBeforeUpdate = newUserData.getAdditionalneeds();
 
-        bookingID = gettingBookingIDAndCheckingOfCreating();
+        bookingID = getBookingIDAndCheckOfCreating();
+
         log.info("Update booking");
-
         UserData updateUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
@@ -74,7 +75,6 @@ public class NegativeTest extends BaseTest{
                 .build();
 
         given()
-
                 .when()
                 .put(getProperty("booking") + "/" + bookingID)
                 .then()
@@ -84,26 +84,26 @@ public class NegativeTest extends BaseTest{
 
 
         log.info("Verify that no change has occurred");
-
         given()
                 .when()
                 .get(getProperty("booking") + "/" + bookingID)
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("firstname", equalTo(name),
-                        "lastname", equalTo(lastName),
-                        "totalprice", equalTo(price),
-                        "bookingdates.checkin", equalTo(checkInDate),
-                        "bookingdates.checkout", equalTo(checkOutDate),
-                        "additionalneeds", equalTo(wishes));
+                .body("firstname", equalTo(nameBeforeUpdate),
+                        "lastname", equalTo(lastNameBeforeUpdate),
+                        "totalprice", equalTo(priceBeforeUpdate),
+                        "bookingdates.checkin", equalTo(checkInDateBeforeUpdate),
+                        "bookingdates.checkout", equalTo(checkOutDateBeforeUpdate),
+                        "additionalneeds", equalTo(wishesBeforeUpdate));
 
 
     }
 
     @Test
-    public void checkCteatBookingWithNegativePrice(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithNegativePrice() {
+
+        log.info("Create a new booking with negative price");
         newUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
@@ -119,8 +119,8 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkCteatBookingWithOldCheckInDate(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithOldCheckInDate() {
+        log.info("Create a new booking with old checkIn date");
         newUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
@@ -136,8 +136,8 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkCteatBookingWithOldCheckOutDate(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithOldCheckOutDate() {
+        log.info("Create a new booking with old checkOut date");
         newUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
@@ -153,8 +153,8 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkCteatBookingWithEmptyFields(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithEmptyFields() {
+        log.info("Create a new booking with empty fields");
         newUserData = UserData.builder()
                 .firstname("")
                 .lastname("")
@@ -170,8 +170,8 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkCteatBookingWithNumbersInFirstName(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithNumbersInFirstName() {
+        log.info("Create a new booking with numbers in firstName field");
         newUserData = UserData.builder()
                 .firstname("1458484554")
                 .lastname(faker.name().lastName())
@@ -187,8 +187,8 @@ public class NegativeTest extends BaseTest{
     }
 
     @Test
-    public void checkCteatBookingWithNumbersInLastName(){
-        log.info("create a new booking");
+    public void checkCreateBookingWithNumbersInLastName() {
+        log.info("Create a new booking with numbers in lastName field");
         newUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname("45464654654")
@@ -205,10 +205,9 @@ public class NegativeTest extends BaseTest{
 
 
     @Test
-    public void getBookingByUnrealID (){
+    public void getBookingByUnrealID() {
 
         log.info("Checking the receipt of a booking for a non-existent ID");
-
         given()
                 .when()
                 .get(getProperty("booking") + "/" + -1)

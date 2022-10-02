@@ -11,10 +11,7 @@ public class UserData {
     private Integer totalprice;
     private boolean depositpaid;
     Bookingdates bookingdates;
-       private String additionalneeds;
-
-
-
+    private String additionalneeds;
 
 
 }

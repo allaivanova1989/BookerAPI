@@ -26,7 +26,7 @@ public class BaseTest {
     Faker faker = new Faker();
 
     protected void create() {
-        log.info("create a new booking");
+        log.info("Create a new booking");
         newUserData = UserData.builder()
                 .firstname(faker.name().firstName())
                 .lastname(faker.name().lastName())
@@ -39,8 +39,8 @@ public class BaseTest {
 
     }
 
-    protected int gettingBookingIDAndCheckingOfCreating() {
-        return   given()
+    protected int getBookingIDAndCheckOfCreating() {
+        return given()
                 .body(newUserData)
                 .when()
                 .post(getProperty("booking"))
@@ -61,6 +61,9 @@ public class BaseTest {
                 .when()
                 .post(getProperty("auth"))
                 .then()
+                .assertThat()
+                .statusCode(200)
+                .body("token", notNullValue())
                 .extract()
                 .path("token");
     }
@@ -77,7 +80,6 @@ public class BaseTest {
         getToken();
 
     }
-
 
 
 }
