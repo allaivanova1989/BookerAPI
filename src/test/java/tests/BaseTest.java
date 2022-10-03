@@ -20,7 +20,7 @@ import static utils.PropertyReader.getProperty;
 @Log4j2
 public class BaseTest {
 
-    String token;
+   static String token;
     UserData newUserData;
     int bookingID;
     Faker faker = new Faker();
