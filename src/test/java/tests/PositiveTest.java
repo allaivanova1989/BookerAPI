@@ -2,6 +2,7 @@ package tests;
 
 import lombok.extern.log4j.Log4j2;
 import models.Bookingdates;
+import models.UpdateUserData;
 import models.UserData;
 import org.testng.annotations.Test;
 
@@ -102,10 +103,7 @@ public class PositiveTest extends BaseTest {
         bookingID = getBookingIDAndCheckOfCreating();
 
         log.info("Update booking");
-        UserData updateUserData = UserData.builder()
-                .firstname(faker.name().firstName())
-                .lastname(faker.name().lastName())
-                .build();
+        UpdateUserData updateUserData = new UpdateUserData(faker.name().firstName(), faker.name().lastName());
 
         String updatedName = updateUserData.getFirstname();
         String updatedLastName = updateUserData.getLastname();
