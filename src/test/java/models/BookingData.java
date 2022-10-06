@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserData {
+public class BookingData {
     private String firstname;
     private String lastname;
     private Integer totalprice;
