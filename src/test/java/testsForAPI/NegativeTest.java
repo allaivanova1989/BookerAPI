@@ -13,9 +13,9 @@ import static utils.PropertyReader.getProperty;
 @Log4j2
 public class NegativeTest extends BaseTest {
 
-    private void checkBadRequest() {
+    private void checkBadRequest(BookingData bookingData) {
         given()
-                .body(newBookingData)
+                .body(bookingData)
                 .when()
                 .post(getProperty("booking"))
                 .then()
@@ -27,8 +27,8 @@ public class NegativeTest extends BaseTest {
     @Test
     public void checkDeletionWithoutAuth() {
         log.info("Checking if a booking can't be deleted without authentication");
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+
+        int bookingID = createNewBookingDataAndGetBookingID();
         given()
 
                 .when()
@@ -53,8 +53,7 @@ public class NegativeTest extends BaseTest {
     @Test
     public void checkUpdatingWithoutAuth() {
         log.info("Checking if a booking can't be updated without authentication");
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Update booking");
         BookingData updateBookingData = BookingData.builder()
@@ -68,6 +67,7 @@ public class NegativeTest extends BaseTest {
 
         given()
                 .when()
+                .body(updateBookingData)
                 .pathParam("id", bookingID)
                 .put(getProperty("bookingWithID"))
                 .then()
@@ -84,12 +84,12 @@ public class NegativeTest extends BaseTest {
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("firstname", equalTo(newBookingData.getFirstname()),
-                        "lastname", equalTo(newBookingData.getLastname()),
-                        "totalprice", equalTo(newBookingData.getTotalprice()),
-                        "bookingdates.checkin", equalTo(newBookingData.getBookingdates().getCheckin()),
-                        "bookingdates.checkout", equalTo(newBookingData.getBookingdates().getCheckout()),
-                        "additionalneeds", equalTo(newBookingData.getAdditionalneeds()));
+                .body("firstname", equalTo(getProperty("firstName")),
+                        "lastname", equalTo(getProperty("lastName")),
+                        "totalprice", equalTo(Integer.parseInt(getProperty("totalPrice"))),
+                        "bookingdates.checkin", equalTo(getProperty("checkInDateForCreate")),
+                        "bookingdates.checkout", equalTo(getProperty("checkOutDateForCreate")),
+                        "additionalneeds", equalTo(getProperty("additionalneeds")));
 
 
     }
@@ -110,7 +110,7 @@ public class NegativeTest extends BaseTest {
     @Test(dataProvider = "differentBookingData")
     public void checkCreateBookingWithIncorrectData(String name, String lastName, int price, boolean deposit, String checkin, String checkout, String wish) {
         log.info("Create a new booking with incorrect data");
-        newBookingData = BookingData.builder()
+        BookingData bookingData = BookingData.builder()
                 .firstname(name)
                 .lastname(lastName)
                 .totalprice(price)
@@ -119,7 +119,7 @@ public class NegativeTest extends BaseTest {
                 .additionalneeds(wish)
                 .build();
 
-        checkBadRequest();
+        checkBadRequest(bookingData);
 
     }
 

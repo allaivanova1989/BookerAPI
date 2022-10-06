@@ -16,8 +16,7 @@ public class PositiveTest extends BaseTest {
     @Test
     public void createBooking() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Check if the created booking exists in the system");
         given()
@@ -27,12 +26,12 @@ public class PositiveTest extends BaseTest {
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("firstname", equalTo(newBookingData.getFirstname()),
-                        "lastname", equalTo(newBookingData.getLastname()),
-                        "totalprice", equalTo(newBookingData.getTotalprice()),
-                        "bookingdates.checkin", equalTo(newBookingData.getBookingdates().getCheckin()),
-                        "bookingdates.checkout", equalTo(newBookingData.getBookingdates().getCheckout()),
-                        "additionalneeds", equalTo(newBookingData.getAdditionalneeds()));
+                .body("firstname", equalTo(getProperty("firstName")),
+                        "lastname", equalTo(getProperty("lastName")),
+                        "totalprice", equalTo(Integer.parseInt(getProperty("totalPrice"))),
+                        "bookingdates.checkin", equalTo(getProperty("checkInDateForCreate")),
+                        "bookingdates.checkout", equalTo(getProperty("checkOutDateForCreate")),
+                        "additionalneeds", equalTo(getProperty("additionalneeds")));
 
     }
 
@@ -40,8 +39,7 @@ public class PositiveTest extends BaseTest {
     @Test
     public void updateBooking() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Update booking");
 
@@ -93,14 +91,12 @@ public class PositiveTest extends BaseTest {
     @Test
     public void partialUpdateBooking() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Update booking");
-        UpdateBookingData updateBookingData = new UpdateBookingData(faker.name().firstName(), faker.name().lastName());
-
-        String updatedName = updateBookingData.getFirstname();
-        String updatedLastName = updateBookingData.getLastname();
+        String updatedName = faker.name().firstName();
+        String updatedLastName = faker.name().lastName();
+        UpdateBookingData updateBookingData = new UpdateBookingData(updatedName, updatedLastName);
 
         given()
                 .body(updateBookingData)
@@ -122,18 +118,18 @@ public class PositiveTest extends BaseTest {
                 .statusCode(200)
                 .body("firstname", equalTo(updatedName),
                         "lastname", equalTo(updatedLastName),
-                        "totalprice", equalTo(newBookingData.getTotalprice()),
-                        "bookingdates.checkin", equalTo(newBookingData.getBookingdates().getCheckin()),
-                        "bookingdates.checkout", equalTo(newBookingData.getBookingdates().getCheckout()),
-                        "additionalneeds", equalTo(newBookingData.getAdditionalneeds()));
+                        "totalprice", equalTo(Integer.parseInt(getProperty("totalPrice"))),
+                        "bookingdates.checkin", equalTo(getProperty("checkInDateForCreate")),
+                        "bookingdates.checkout", equalTo(getProperty("checkOutDateForCreate")),
+                        "additionalneeds", equalTo(getProperty("additionalneeds")));
 
     }
+
 
     @Test
     public void deleteUser() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Delete a booking");
         given()
@@ -171,8 +167,7 @@ public class PositiveTest extends BaseTest {
     @Test
     public void getBookingByID() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Checking the receipt of a booking for an ID");
         given()
@@ -182,25 +177,25 @@ public class PositiveTest extends BaseTest {
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("firstname", equalTo(newBookingData.getFirstname()),
-                        "lastname", equalTo(newBookingData.getLastname()),
-                        "totalprice", equalTo(newBookingData.getTotalprice()),
-                        "bookingdates.checkin", equalTo(newBookingData.getBookingdates().getCheckin()),
-                        "bookingdates.checkout", equalTo(newBookingData.getBookingdates().getCheckout()),
-                        "additionalneeds", equalTo(newBookingData.getAdditionalneeds()));
+                .body("firstname", equalTo(getProperty("firstName")),
+                        "lastname", equalTo(getProperty("lastName")),
+                        "totalprice", equalTo(Integer.parseInt(getProperty("totalPrice"))),
+                        "bookingdates.checkin", equalTo(getProperty("checkInDateForCreate")),
+                        "bookingdates.checkout", equalTo(getProperty("checkOutDateForCreate")),
+                        "additionalneeds", equalTo(getProperty("additionalneeds")));
     }
 
     @Test
     public void getBookingByNameAndLastName() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Checking the receipt of a booking for a firstname and lastname");
         given()
                 .when()
-                .get(getProperty("getBookingByFirstnameAndLastName"),
-                        newBookingData.getFirstname(), newBookingData.getLastname())
+                .param("firstname", getProperty("firstName"))
+                .param("lastname", getProperty("lastName"))
+                .get(getProperty("booking"))
                 .then()
                 .assertThat()
                 .statusCode(200)
@@ -210,14 +205,14 @@ public class PositiveTest extends BaseTest {
     @Test
     public void getBookingByCheckInDateAndCheckoutDate() {
 
-        getNewBookingData();
-        bookingID = getBookingIDAndCheckOfCreating();
+        int bookingID = createNewBookingDataAndGetBookingID();
 
         log.info("Checking the receipt of a booking for a checkInDate and checkOutDate");
         given()
                 .when()
-                .get(getProperty("getBookingByCheckinAndCheckout"),
-                        newBookingData.getBookingdates().getCheckin(), newBookingData.getBookingdates().getCheckout())
+                .param("checkin", getProperty("checkInDateForCreate"))
+                .param("checkout", getProperty("checkOutDateForCreate"))
+                .get(getProperty("booking"))
                 .then()
                 .assertThat()
                 .statusCode(200)

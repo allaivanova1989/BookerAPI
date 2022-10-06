@@ -14,45 +14,42 @@ import models.BookingData;
 import org.testng.annotations.BeforeSuite;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
 import static utils.PropertyReader.getProperty;
+import static utils.PropertyReader.setProperties;
 
 @Log4j2
 public class BaseTest {
 
-    static String token;
-    BookingData newBookingData;
-    int bookingID;
     Faker faker = new Faker();
+    static String token;
 
-    protected BookingData getNewBookingData() {
+
+    protected int createNewBookingDataAndGetBookingID() {
         log.info("Create a new booking");
-        return newBookingData = BookingData.builder()
-                .firstname(faker.name().firstName())
-                .lastname(faker.name().lastName())
-                .totalprice(faker.number().numberBetween(100, 600))
-                .depositpaid(true)
+
+        setProperties();
+
+        BookingData bookingData = BookingData.builder()
+                .firstname(getProperty("firstName"))
+                .lastname(getProperty("lastName"))
+                .totalprice(Integer.parseInt(getProperty("totalPrice")))
+                .depositpaid(Boolean.parseBoolean(getProperty("depositpaid")))
                 .bookingdates(new Bookingdates(getProperty("checkInDateForCreate"), getProperty("checkOutDateForCreate")))
-                .additionalneeds("TV in the room")
+                .additionalneeds(getProperty("additionalneeds"))
                 .build();
 
-
-    }
-
-    protected int getBookingIDAndCheckOfCreating() {
         return given()
-                .body(newBookingData)
+                .body(bookingData)
                 .when()
                 .post(getProperty("booking"))
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("bookingid", notNullValue())
                 .extract()
                 .path("bookingid");
 
-
     }
+
 
     @BeforeSuite
     public void setUp() {
@@ -73,7 +70,6 @@ public class BaseTest {
                 .then()
                 .assertThat()
                 .statusCode(200)
-                .body("token", notNullValue())
                 .extract()
                 .path("token");
 
